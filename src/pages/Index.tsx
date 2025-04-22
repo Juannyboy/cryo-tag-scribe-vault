@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QRCodeCanvas } from "@/components/QRCode";
 
-// Interface for decanting records
 interface DecanterRecord {
   id: string;
   date: string;
@@ -77,7 +76,6 @@ const Index = () => {
     setRecords(prev => [newRecord, ...prev]);
     setActiveRecord(newRecord);
     
-    // Reset form
     setFormData({
       requester: "",
       department: "",
@@ -110,14 +108,14 @@ const Index = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold">Liquid Nitrogen Decanting System</h1>
-        <p className="text-muted-foreground">Track and generate QR codes for liquid nitrogen decanting</p>
+    <div className="container mx-auto py-4 px-4 md:py-8 md:px-8">
+      <div className="text-center mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">Liquid Nitrogen Decanting System</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Track and generate QR codes for liquid nitrogen decanting</p>
       </div>
 
       <Tabs defaultValue="new" className="max-w-4xl mx-auto">
-        <TabsList className="grid grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-6 md:mb-8">
           <TabsTrigger value="new">New Decant Record</TabsTrigger>
           <TabsTrigger value="records">View Records</TabsTrigger>
           <TabsTrigger value="scan">Scan QR</TabsTrigger>
@@ -200,7 +198,7 @@ const Index = () => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full">Create Record & Generate QR Code</Button>
+                <Button type="submit" className="w-full md:w-auto">Create Record & Generate QR Code</Button>
               </form>
             </CardContent>
           </Card>
@@ -215,7 +213,7 @@ const Index = () => {
                   <QRCodeCanvas value={activeRecord.id} size={200} />
                 </div>
                 <p className="text-lg font-semibold mb-2">Decanting ID: {activeRecord.id}</p>
-                <p className="text-muted-foreground mb-4">Scan this code to retrieve the record</p>
+                <p className="text-sm text-muted-foreground mb-4 text-center">Scan this code to retrieve the record</p>
                 <Button onClick={() => handleGeneratePDF(activeRecord)}>Generate PDF Form</Button>
               </CardContent>
             </Card>
@@ -228,23 +226,23 @@ const Index = () => {
               <CardTitle>Decanting Records</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[500px]">
+              <ScrollArea className="h-[400px] md:h-[500px]">
                 {records.length > 0 ? (
                   <div className="space-y-4">
                     {records.map((record) => (
                       <Card key={record.id} className="p-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                          <div>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                          <div className="flex-1">
                             <h3 className="font-semibold">ID: {record.id}</h3>
                             <p className="text-sm text-muted-foreground">Date: {record.date}</p>
                             <p className="text-sm">Requester: {record.requester} ({record.department})</p>
                             <p className="text-sm">Amount: {record.amount}</p>
                           </div>
-                          <div className="flex flex-col mt-2 md:mt-0 md:ml-4">
-                            <Button onClick={() => setActiveRecord(record)} size="sm" className="mb-2">
+                          <div className="flex flex-col gap-2 w-full md:w-auto">
+                            <Button onClick={() => setActiveRecord(record)} size="sm" className="w-full md:w-auto">
                               View QR Code
                             </Button>
-                            <Button onClick={() => handleGeneratePDF(record)} variant="outline" size="sm">
+                            <Button onClick={() => handleGeneratePDF(record)} variant="outline" size="sm" className="w-full md:w-auto">
                               Generate PDF
                             </Button>
                           </div>
@@ -267,13 +265,14 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p>To simulate scanning, enter the Decanting ID directly:</p>
-                <div className="flex space-x-2">
+                <p className="text-sm">To simulate scanning, enter the Decanting ID directly:</p>
+                <div className="flex flex-col md:flex-row gap-2">
                   <Input 
+                    className="flex-1"
                     placeholder="Enter Decanting ID (e.g. LN21122)"
                     onChange={handleSearch} 
                   />
-                  <Button variant="outline">Search</Button>
+                  <Button variant="outline" className="w-full md:w-auto">Search</Button>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
                   Note: In a real implementation, this would use the device camera to scan QR codes.
