@@ -1,13 +1,29 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 interface ScanQRCodeProps {
-  onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearch: (id: string) => void;
 }
 
 export function ScanQRCode({ onSearch }: ScanQRCodeProps) {
+  const [searchId, setSearchId] = useState("");
+
+  const handleSearch = () => {
+    if (searchId.trim()) {
+      onSearch(searchId.trim());
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -20,9 +36,16 @@ export function ScanQRCode({ onSearch }: ScanQRCodeProps) {
             <Input 
               className="flex-1"
               placeholder="Enter Decanting ID (e.g. LN21122)"
-              onChange={onSearch} 
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              onKeyPress={handleKeyPress}
             />
-            <Button variant="outline" className="w-full md:w-auto">Search</Button>
+            <Button 
+              onClick={handleSearch}
+              className="w-full md:w-auto"
+            >
+              <Search className="mr-2 h-4 w-4" /> Search
+            </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             Note: In a real implementation, this would use the device camera to scan QR codes.

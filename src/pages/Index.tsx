@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecantForm } from "@/components/decant/DecantForm";
@@ -6,8 +5,10 @@ import { QRCodeDisplay } from "@/components/decant/QRCodeDisplay";
 import { RecordsList } from "@/components/decant/RecordsList";
 import { ScanQRCode } from "@/components/decant/ScanQRCode";
 import { DecanterRecord } from "@/types/decanter";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const { toast } = useToast();
   const [records, setRecords] = useState<DecanterRecord[]>(() => {
     const saved = localStorage.getItem("decanterRecords");
     return saved ? JSON.parse(saved) : [];
@@ -55,15 +56,21 @@ const Index = () => {
     });
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim();
-    if (!value) return;
+  const handleSearch = (id: string) => {
+    const foundRecord = records.find(record => record.id === id);
     
-    const found = records.find(record => record.id === value);
-    if (found) {
-      setActiveRecord(found);
+    if (foundRecord) {
+      setActiveRecord(foundRecord);
+      toast({
+        title: "Record Found",
+        description: `Found record for ID: ${id}`,
+      });
     } else {
-      alert("No record found with that ID");
+      toast({
+        title: "Record Not Found",
+        description: `No record found with ID: ${id}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -101,6 +108,12 @@ const Index = () => {
 
         <TabsContent value="scan">
           <ScanQRCode onSearch={handleSearch} />
+          {activeRecord && (
+            <QRCodeDisplay 
+              record={activeRecord} 
+              onGeneratePDF={handleGeneratePDF} 
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
