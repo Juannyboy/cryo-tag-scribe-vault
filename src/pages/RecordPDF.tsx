@@ -1,15 +1,16 @@
-
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { DecanterRecord } from "@/types/decanter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
 import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from "lucide-react";
 
 export default function RecordPDF() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [record, setRecord] = useState<DecanterRecord | null>(null);
 
   // Fetch by Decanter ID from localStorage
@@ -38,6 +39,10 @@ export default function RecordPDF() {
     });
   };
 
+  const handleGoBack = () => {
+    navigate(-1); // This goes back to the previous page
+  };
+
   if (!id)
     return (
       <div className="p-8">
@@ -53,7 +58,16 @@ export default function RecordPDF() {
     );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/20">
+    <div className="min-h-screen flex items-center justify-center bg-muted/20 relative">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="absolute top-4 left-4"
+        onClick={handleGoBack}
+      >
+        <ArrowLeft className="h-6 w-6" />
+      </Button>
+      
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Liquid Nitrogen Decant Record</CardTitle>
