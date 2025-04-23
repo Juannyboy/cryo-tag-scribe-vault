@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecantForm } from "@/components/decant/DecantForm";
@@ -17,49 +18,44 @@ const Index = () => {
   });
   
   const [activeRecord, setActiveRecord] = useState<DecanterRecord | null>(null);
-  const [lastId, setLastId] = useState(() => {
-    const saved = localStorage.getItem("lastDecanterID");
-    return saved ? parseInt(saved) : 1000;
-  });
 
+  // Remove lastId since we're now allowing custom IDs
+  
   useEffect(() => {
     localStorage.setItem("decanterRecords", JSON.stringify(records));
   }, [records]);
 
-  const generateDecanterId = () => {
-    const nextId = lastId + 1;
-    setLastId(nextId);
-    localStorage.setItem("lastDecanterID", nextId.toString());
-    return `LN2${nextId}`;
-  };
-
-  const handleSubmit = (formData: Omit<DecanterRecord, "id" | "date">) => {
-    const currentDate = new Date();
-    const formattedDate = `${currentDate.getDate()}-${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                                                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][currentDate.getMonth()]}-${String(currentDate.getFullYear()).slice(2)}`;
-    
+  // The form now provides the complete record with ID and date
+  const handleSubmit = (formData: Omit<DecanterRecord, "date"> & { date: string }) => {
     const newRecord: DecanterRecord = {
-      id: generateDecanterId(),
-      date: formattedDate,
       ...formData,
       purchaseOrder: formData.purchaseOrder || "0000-000000",
     };
     
+    // Check if ID already exists
+    if (records.some(record => record.id === newRecord.id)) {
+      toast({
+        title: "ID Already Exists",
+        description: "Please choose a different Decanting ID.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setRecords(prev => [newRecord, ...prev]);
     setActiveRecord(newRecord);
   };
-
-  const withScanDate = (record: DecanterRecord, scanDateStr: string): DecanterRecord => ({
-    ...record,
-    date: scanDateStr,
-  });
 
   const handleGeneratePDF = (record: DecanterRecord) => {
     import("@/lib/pdf-generator").then(module => {
       module.generatePDF(record);
     }).catch(error => {
       console.error("Error generating PDF:", error);
-      alert("There was an error generating the PDF. Please try again.");
+      toast({
+        title: "Error Generating PDF",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive",
+      });
     });
   };
 

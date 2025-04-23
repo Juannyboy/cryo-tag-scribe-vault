@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DecanterRecord } from "@/types/decanter";
@@ -40,7 +41,7 @@ export default function RecordPDF() {
   };
 
   const handleGoBack = () => {
-    navigate(-1); // This goes back to the previous page
+    navigate("/"); // This goes directly to the home page
   };
 
   if (!id)
