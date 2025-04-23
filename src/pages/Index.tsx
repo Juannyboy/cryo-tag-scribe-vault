@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecantForm } from "@/components/decant/DecantForm";
@@ -7,9 +6,11 @@ import { RecordsList } from "@/components/decant/RecordsList";
 import { ScanQRCode } from "@/components/decant/ScanQRCode";
 import { DecanterRecord } from "@/types/decanter";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [records, setRecords] = useState<DecanterRecord[]>(() => {
     const saved = localStorage.getItem("decanterRecords");
     return saved ? JSON.parse(saved) : [];
@@ -48,7 +49,6 @@ const Index = () => {
     setActiveRecord(newRecord);
   };
 
-  // Helper to create a deep copy with a new date string
   const withScanDate = (record: DecanterRecord, scanDateStr: string): DecanterRecord => ({
     ...record,
     date: scanDateStr,
@@ -63,7 +63,6 @@ const Index = () => {
     });
   };
 
-  // Modified: After a successful search, immediately generate the PDF with scan date
   const handleSearch = (id: string) => {
     const foundRecord = records.find(record => record.id === id);
     if (foundRecord) {
@@ -73,21 +72,7 @@ const Index = () => {
         description: `Found record for ID: ${id}`,
       });
 
-      // Generate PDF with scan date (today)
-      const currentDate = new Date();
-      const formattedDate = `${currentDate.getDate()}-${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][currentDate.getMonth()]}-${String(currentDate.getFullYear()).slice(2)}`;
-      import("@/lib/pdf-generator").then(module => {
-        module.generatePDF(withScanDate(foundRecord, formattedDate));
-      }).catch(error => {
-        console.error("Error generating PDF:", error);
-        toast({
-          title: "PDF Error",
-          description: "There was an error generating the scanned PDF. Please try again.",
-          variant: "destructive",
-        });
-      });
-
+      navigate(`/record/${foundRecord.id}`);
     } else {
       toast({
         title: "Record Not Found",
@@ -144,4 +129,3 @@ const Index = () => {
 };
 
 export default Index;
-

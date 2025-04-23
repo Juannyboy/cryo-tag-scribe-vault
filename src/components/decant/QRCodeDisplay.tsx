@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
 import { DecanterRecord } from "@/types/decanter";
 
+// Make sure to encode a full URL to the /record/:id page, not just the ID!
+function getQRCodeValue(record: DecanterRecord): string {
+  // For Vite/Lovable, use pathname only (window.location.origin + ...)
+  let baseUrl = window?.location?.origin || "";
+  return `${baseUrl}/record/${record.id}`;
+}
+
 interface QRCodeDisplayProps {
   record: DecanterRecord;
   onGeneratePDF: (record: DecanterRecord) => void;
@@ -17,11 +24,13 @@ export function QRCodeDisplay({ record, onGeneratePDF }: QRCodeDisplayProps) {
       </CardHeader>
       <CardContent className="flex flex-col items-center">
         <div className="mb-4 border p-4 bg-white">
-          <QRCodeCanvas value={record.id} size={200} />
+          <QRCodeCanvas value={getQRCodeValue(record)} size={200} />
         </div>
         <p className="text-lg font-semibold mb-2">Decanting ID: {record.id}</p>
         <p className="text-sm text-muted-foreground mb-4 text-center">
-          Scan this code to retrieve the record
+          <span>
+            Scan this code on any device to view/download the PDF for this record.
+          </span>
         </p>
         <Button onClick={() => onGeneratePDF(record)}>Generate PDF Form</Button>
       </CardContent>
