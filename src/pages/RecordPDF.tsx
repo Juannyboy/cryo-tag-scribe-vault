@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DecanterRecord } from "@/types/decanter";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function RecordPDF() {
   const { id } = useParams<{ id: string }>();
@@ -14,15 +14,31 @@ export default function RecordPDF() {
   const navigate = useNavigate();
   const [record, setRecord] = useState<DecanterRecord | null>(null);
 
-  // Fetch by Decanter ID from localStorage
+  // Fetch record from Supabase
   useEffect(() => {
     if (!id) return;
-    const recordsRaw = localStorage.getItem("decanterRecords");
-    if (!recordsRaw) return;
-    const records: DecanterRecord[] = JSON.parse(recordsRaw);
-    const found = records.find((r) => r.id === id);
-    if (found) setRecord(found);
-  }, [id]);
+    
+    const fetchRecord = async () => {
+      const { data, error } = await supabase
+        .from('decanter_records')
+        .select()
+        .eq('id', id)
+        .single();
+      
+      if (error || !data) {
+        toast({
+          title: "Record Not Found",
+          description: "Could not find the requested record.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setRecord(data);
+    };
+
+    fetchRecord();
+  }, [id, toast]);
 
   const scanDate = (() => {
     const d = new Date();
@@ -32,16 +48,16 @@ export default function RecordPDF() {
   const handlePDF = () => {
     if (!record) return;
     import("@/lib/pdf-generator").then(mod => {
-      mod.generatePDF({ ...record, date: scanDate });
+      mod.generatePDF(record);
       toast({
         title: "PDF Downloaded",
-        description: `PDF for ${record.id} generated with scan date.`,
+        description: `PDF for ${record.id} generated with scan date ${scanDate}.`,
       });
     });
   };
 
   const handleGoBack = () => {
-    navigate("/"); // This goes directly to the home page
+    navigate("/");
   };
 
   if (!id)

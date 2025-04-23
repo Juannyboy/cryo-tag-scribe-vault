@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecantForm } from "@/components/decant/DecantForm";
@@ -8,29 +7,44 @@ import { ScanQRCode } from "@/components/decant/ScanQRCode";
 import { DecanterRecord } from "@/types/decanter";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [records, setRecords] = useState<DecanterRecord[]>(() => {
-    const saved = localStorage.getItem("decanterRecords");
-    return saved ? JSON.parse(saved) : [];
-  });
-  
+  const [records, setRecords] = useState<DecanterRecord[]>([]);
   const [activeRecord, setActiveRecord] = useState<DecanterRecord | null>(null);
-  
-  useEffect(() => {
-    localStorage.setItem("decanterRecords", JSON.stringify(records));
-  }, [records]);
 
-  const handleSubmit = (formData: Omit<DecanterRecord, "date"> & { date: string }) => {
+  useEffect(() => {
+    fetchRecords();
+  }, []);
+
+  const fetchRecords = async () => {
+    const { data, error } = await supabase
+      .from('decanter_records')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching records:', error);
+      toast({
+        title: "Error Loading Records",
+        description: "There was an error loading the records.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (data) setRecords(data);
+  };
+
+  const handleSubmit = async (formData: Omit<DecanterRecord, "date"> & { date: string }) => {
     const newRecord: DecanterRecord = {
       ...formData,
       date: formData.date,
       purchaseOrder: formData.purchaseOrder || "0000-000000",
     };
     
-    // Check if ID already exists
     if (records.some(record => record.id === newRecord.id)) {
       toast({
         title: "ID Already Exists",
@@ -39,9 +53,27 @@ const Index = () => {
       });
       return;
     }
-    
-    setRecords(prev => [newRecord, ...prev]);
+
+    const { error } = await supabase
+      .from('decanter_records')
+      .insert(newRecord);
+
+    if (error) {
+      console.error('Error inserting record:', error);
+      toast({
+        title: "Error Saving Record",
+        description: "There was an error saving the record.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await fetchRecords();
     setActiveRecord(newRecord);
+    toast({
+      title: "Record Created",
+      description: "New decanting record has been created successfully.",
+    });
   };
 
   const handleGeneratePDF = (record: DecanterRecord) => {
@@ -57,23 +89,28 @@ const Index = () => {
     });
   };
 
-  const handleSearch = (id: string) => {
-    const foundRecord = records.find(record => record.id === id);
-    if (foundRecord) {
-      setActiveRecord(foundRecord);
-      toast({
-        title: "Record Found",
-        description: `Found record for ID: ${id}`,
-      });
+  const handleSearch = async (id: string) => {
+    const { data, error } = await supabase
+      .from('decanter_records')
+      .select()
+      .eq('id', id)
+      .single();
 
-      navigate(`/record/${foundRecord.id}`);
-    } else {
+    if (error || !data) {
       toast({
         title: "Record Not Found",
         description: `No record found with ID: ${id}`,
         variant: "destructive",
       });
+      return;
     }
+
+    setActiveRecord(data);
+    toast({
+      title: "Record Found",
+      description: `Found record for ID: ${id}`,
+    });
+    navigate(`/record/${data.id}`);
   };
 
   return (

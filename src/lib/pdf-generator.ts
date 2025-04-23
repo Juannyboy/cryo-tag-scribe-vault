@@ -1,16 +1,6 @@
-import jsPDF from "jspdf";
 
-// Interface definition for decantor records
-export interface DecanterRecord {
-  id: string;
-  date: string;
-  requester: string;
-  department: string;
-  purchaseOrder: string;
-  amount: string;
-  representative: string;
-  requesterRepresentative: string;
-}
+import jsPDF from "jspdf";
+import { DecanterRecord } from "@/types/decanter";
 
 export const generatePDF = (record: DecanterRecord) => {
   const doc = new jsPDF({
@@ -52,15 +42,24 @@ export const generatePDF = (record: DecanterRecord) => {
   doc.setFont("helvetica", "bold");
   doc.text("Liquid Nitrogen Decant Form", 105, 65, { align: "center" });
   
-  // Add decanting number
+  // Add scan date (new)
+  const scanDate = new Date();
+  const formattedScanDate = `${scanDate.getDate()}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][scanDate.getMonth()]}-${String(scanDate.getFullYear()).slice(2)}`;
   doc.setFontSize(10);
-  doc.text("Decanting Number:", 15, 80);
+  doc.setFont("helvetica", "normal");
+  doc.text("Scan Date:", 15, 75);
   doc.setFont("helvetica", "bold");
-  doc.text(record.id, 50, 80);
+  doc.text(formattedScanDate, 40, 75);
+  doc.setFont("helvetica", "normal");
+  
+  // Add decanting number
+  doc.text("Decanting Number:", 15, 85);
+  doc.setFont("helvetica", "bold");
+  doc.text(record.id, 50, 85);
   doc.setFont("helvetica", "normal");
   
   // Create table structure with proper spacing
-  const startY = 90;
+  const startY = 95;
   const lineHeight = 15;
   const colWidth = 180;
   const labelX = 20;
@@ -123,7 +122,6 @@ export const generatePDF = (record: DecanterRecord) => {
   doc.setTextColor(255, 0, 0);
   doc.setFontSize(10);
   doc.text("Please make sure dewars are present before 09:00 on Tuesdays", 105, dateY + 45, { align: "center" });
-  doc.text("and Thursdays", 105, dateY + 53, { align: "center" });
   doc.setTextColor(0, 0, 0);
   
   // Save the PDF
