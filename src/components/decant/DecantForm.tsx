@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 
 interface DecantFormProps {
-  onSubmit: (record: Omit<DecanterRecord, "date">) => void;
+  onSubmit: (record: Omit<DecanterRecord, "date"> & { date: string }) => void;
 }
 
 export function DecantForm({ onSubmit }: DecantFormProps) {

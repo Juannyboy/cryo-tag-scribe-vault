@@ -18,17 +18,15 @@ const Index = () => {
   });
   
   const [activeRecord, setActiveRecord] = useState<DecanterRecord | null>(null);
-
-  // Remove lastId since we're now allowing custom IDs
   
   useEffect(() => {
     localStorage.setItem("decanterRecords", JSON.stringify(records));
   }, [records]);
 
-  // The form now provides the complete record with ID and date
   const handleSubmit = (formData: Omit<DecanterRecord, "date"> & { date: string }) => {
     const newRecord: DecanterRecord = {
       ...formData,
+      date: formData.date,
       purchaseOrder: formData.purchaseOrder || "0000-000000",
     };
     
