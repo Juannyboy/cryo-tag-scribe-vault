@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecantForm } from "@/components/decant/DecantForm";
@@ -47,6 +48,12 @@ const Index = () => {
     setActiveRecord(newRecord);
   };
 
+  // Helper to create a deep copy with a new date string
+  const withScanDate = (record: DecanterRecord, scanDateStr: string): DecanterRecord => ({
+    ...record,
+    date: scanDateStr,
+  });
+
   const handleGeneratePDF = (record: DecanterRecord) => {
     import("@/lib/pdf-generator").then(module => {
       module.generatePDF(record);
@@ -56,15 +63,31 @@ const Index = () => {
     });
   };
 
+  // Modified: After a successful search, immediately generate the PDF with scan date
   const handleSearch = (id: string) => {
     const foundRecord = records.find(record => record.id === id);
-    
     if (foundRecord) {
       setActiveRecord(foundRecord);
       toast({
         title: "Record Found",
         description: `Found record for ID: ${id}`,
       });
+
+      // Generate PDF with scan date (today)
+      const currentDate = new Date();
+      const formattedDate = `${currentDate.getDate()}-${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][currentDate.getMonth()]}-${String(currentDate.getFullYear()).slice(2)}`;
+      import("@/lib/pdf-generator").then(module => {
+        module.generatePDF(withScanDate(foundRecord, formattedDate));
+      }).catch(error => {
+        console.error("Error generating PDF:", error);
+        toast({
+          title: "PDF Error",
+          description: "There was an error generating the scanned PDF. Please try again.",
+          variant: "destructive",
+        });
+      });
+
     } else {
       toast({
         title: "Record Not Found",
@@ -121,3 +144,4 @@ const Index = () => {
 };
 
 export default Index;
+
