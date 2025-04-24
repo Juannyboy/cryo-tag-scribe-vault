@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import RecordPDF from "./pages/RecordPDF";
 import History from "./pages/History";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/record/:id" element={<RecordPDF />} />
           <Route path="/history" element={<History />} />
           <Route path="*" element={<NotFound />} />

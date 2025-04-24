@@ -26,28 +26,45 @@ export function RecordsList({
 }: RecordsListProps) {
   const { toast } = useToast();
 
-  const handleDelete = async (record: DecanterRecord) => {
-    const { error } = await supabase
-      .from('decanter_records')
-      .update({ deleted: true, deleted_at: new Date().toISOString() })
-      .eq('id', record.id);
+  const handleDelete = async (record: DecanterRecord, permanent: boolean = false) => {
+    try {
+      if (permanent) {
+        // Permanently delete the record
+        const { error } = await supabase
+          .from('decanter_records')
+          .delete()
+          .eq('id', record.id);
 
-    if (error) {
+        if (error) throw error;
+
+        toast({
+          title: "Record Deleted",
+          description: "The record has been permanently deleted."
+        });
+      } else {
+        // Soft delete (move to bin)
+        const { error } = await supabase
+          .from('decanter_records')
+          .update({ deleted: true, deleted_at: new Date().toISOString() })
+          .eq('id', record.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Record Moved to Bin",
+          description: "The record has been moved to the bin."
+        });
+      }
+
+      // Refresh the page to update the list
+      window.location.reload();
+    } catch (error: any) {
       toast({
-        title: "Error Deleting Record",
-        description: "There was an error moving the record to bin.",
+        title: "Error",
+        description: error.message,
         variant: "destructive"
       });
-      return;
     }
-
-    toast({
-      title: "Record Moved to Bin",
-      description: "The record has been moved to the bin."
-    });
-
-    // Refresh the page to update the list
-    window.location.reload();
   };
 
   return (
@@ -86,16 +103,27 @@ export function RecordsList({
                           Move to Bin
                         </Button>
                       )}
-                      {showRestoreButton && onRestore && (
-                        <Button 
-                          onClick={() => onRestore(record)} 
-                          variant="outline" 
-                          size="sm"
-                          className="w-full md:w-auto"
-                        >
-                          <History className="mr-2 h-4 w-4" />
-                          Restore
-                        </Button>
+                      {showRestoreButton && (
+                        <>
+                          <Button 
+                            onClick={() => onRestore && onRestore(record)} 
+                            variant="outline" 
+                            size="sm"
+                            className="w-full md:w-auto"
+                          >
+                            <History className="mr-2 h-4 w-4" />
+                            Restore
+                          </Button>
+                          <Button 
+                            onClick={() => handleDelete(record, true)} 
+                            variant="destructive" 
+                            size="sm"
+                            className="w-full md:w-auto"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Permanently
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
