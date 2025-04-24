@@ -1,4 +1,3 @@
-
 import jsPDF from "jspdf";
 import { DecanterRecord } from "@/types/decanter";
 
@@ -11,6 +10,12 @@ export const generatePDF = (record: DecanterRecord) => {
 
   // Set font
   doc.setFont("helvetica", "normal");
+  
+  // Get current scan date
+  const scanDate = (() => {
+    const d = new Date();
+    return `${d.getDate()}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
+  })();
   
   // Add header with proper spacing
   doc.setFontSize(8);
@@ -42,17 +47,15 @@ export const generatePDF = (record: DecanterRecord) => {
   doc.setFont("helvetica", "bold");
   doc.text("Liquid Nitrogen Decant Form", 105, 65, { align: "center" });
   
-  // Add scan date (new)
-  const scanDate = new Date();
-  const formattedScanDate = `${scanDate.getDate()}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][scanDate.getMonth()]}-${String(scanDate.getFullYear()).slice(2)}`;
+  // Add scan date
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Scan Date:", 15, 75);
+  doc.text("PDF Scan Date:", 15, 75);
   doc.setFont("helvetica", "bold");
-  doc.text(formattedScanDate, 40, 75);
+  doc.text(scanDate, 45, 75);
   doc.setFont("helvetica", "normal");
   
-  // Add decanting number
+  // Add decanting number with proper spacing
   doc.text("Decanting Number:", 15, 85);
   doc.setFont("helvetica", "bold");
   doc.text(record.id, 50, 85);
@@ -77,7 +80,7 @@ export const generatePDF = (record: DecanterRecord) => {
   addField("Purchase-Order Number:", record.purchaseOrder, startY + lineHeight * 2);
   addField("Liquid nitrogen decanted:", record.amount, startY + lineHeight * 3);
   
-  // Signature blocks with proper spacing
+  // Signature blocks
   const sigY = startY + lineHeight * 4 + 10;
   const blockWidth = 85;
   const sigHeight = 25;
@@ -118,12 +121,24 @@ export const generatePDF = (record: DecanterRecord) => {
   doc.text("Date:", 152.5, dateY + 7, { align: "center" });
   doc.text(record.date, 152.5, dateY + 20, { align: "center" });
   
-  // Final note - changed to only mention Tuesdays, not Thursdays
+  // Final note - only mention Tuesdays
   doc.setTextColor(255, 0, 0);
   doc.setFontSize(10);
   doc.text("Please make sure dewars are present before 09:00 on Tuesdays", 105, dateY + 45, { align: "center" });
   doc.setTextColor(0, 0, 0);
   
-  // Save the PDF
-  doc.save(`Liquid_Nitrogen_Decant_${record.id}.pdf`);
+  // For mobile devices, we need to use different method to trigger download
+  const pdfOutput = doc.output('blob');
+  const pdfUrl = URL.createObjectURL(pdfOutput);
+  
+  // Create a temporary link and trigger download
+  const link = document.createElement('a');
+  link.href = pdfUrl;
+  link.download = `Liquid_Nitrogen_Decant_${record.id}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Clean up the URL object
+  URL.revokeObjectURL(pdfUrl);
 };
