@@ -1,8 +1,10 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import RecordPDF from "./pages/RecordPDF";
@@ -18,11 +20,23 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/record/:id" element={<RecordPDF />} />
-          <Route path="/history" element={<History />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/" element={
+            <AuthGuard>
+              <Index />
+            </AuthGuard>
+          } />
+          <Route path="/record/:id" element={
+            <AuthGuard>
+              <RecordPDF />
+            </AuthGuard>
+          } />
+          <Route path="/history" element={
+            <AuthGuard>
+              <History />
+            </AuthGuard>
+          } />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
