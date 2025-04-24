@@ -118,7 +118,7 @@ export const generatePDF = (record: DecanterRecord) => {
   doc.text("Date:", 152.5, dateY + 7, { align: "center" });
   doc.text(record.date, 152.5, dateY + 20, { align: "center" });
   
-  // Final note with proper spacing and red color
+  // Final note - changed to only mention Tuesdays, not Thursdays
   doc.setTextColor(255, 0, 0);
   doc.setFontSize(10);
   doc.text("Please make sure dewars are present before 09:00 on Tuesdays", 105, dateY + 45, { align: "center" });

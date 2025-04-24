@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DecanterRecord } from "@/types/decanter";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function RecordPDF() {
   const { id } = useParams<{ id: string }>();
@@ -34,7 +35,19 @@ export default function RecordPDF() {
         return;
       }
       
-      setRecord(data);
+      // Transform the data to match our DecanterRecord type
+      const transformedRecord: DecanterRecord = {
+        id: data.id,
+        date: data.date,
+        requester: data.requester,
+        department: data.department,
+        purchaseOrder: data.purchase_order,
+        amount: data.amount,
+        representative: data.representative,
+        requesterRepresentative: data.requester_representative
+      };
+      
+      setRecord(transformedRecord);
     };
 
     fetchRecord();

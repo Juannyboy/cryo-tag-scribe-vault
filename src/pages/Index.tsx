@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecantForm } from "@/components/decant/DecantForm";
@@ -35,7 +36,21 @@ const Index = () => {
       return;
     }
 
-    if (data) setRecords(data);
+    if (data) {
+      // Transform the data to match our DecanterRecord type
+      const transformedRecords: DecanterRecord[] = data.map(item => ({
+        id: item.id,
+        date: item.date,
+        requester: item.requester,
+        department: item.department,
+        purchaseOrder: item.purchase_order,
+        amount: item.amount,
+        representative: item.representative,
+        requesterRepresentative: item.requester_representative
+      }));
+      
+      setRecords(transformedRecords);
+    }
   };
 
   const handleSubmit = async (formData: Omit<DecanterRecord, "date"> & { date: string }) => {
@@ -54,9 +69,21 @@ const Index = () => {
       return;
     }
 
+    // Transform the record to match the database structure
+    const dbRecord = {
+      id: newRecord.id,
+      date: newRecord.date,
+      requester: newRecord.requester,
+      department: newRecord.department,
+      purchase_order: newRecord.purchaseOrder,
+      amount: newRecord.amount,
+      representative: newRecord.representative,
+      requester_representative: newRecord.requesterRepresentative
+    };
+
     const { error } = await supabase
       .from('decanter_records')
-      .insert(newRecord);
+      .insert(dbRecord);
 
     if (error) {
       console.error('Error inserting record:', error);
@@ -105,7 +132,19 @@ const Index = () => {
       return;
     }
 
-    setActiveRecord(data);
+    // Transform the data to match our DecanterRecord type
+    const transformedRecord: DecanterRecord = {
+      id: data.id,
+      date: data.date,
+      requester: data.requester,
+      department: data.department,
+      purchaseOrder: data.purchase_order,
+      amount: data.amount,
+      representative: data.representative,
+      requesterRepresentative: data.requester_representative
+    };
+
+    setActiveRecord(transformedRecord);
     toast({
       title: "Record Found",
       description: `Found record for ID: ${id}`,
