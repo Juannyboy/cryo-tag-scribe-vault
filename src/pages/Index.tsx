@@ -9,6 +9,8 @@ import { DecanterRecord } from "@/types/decanter";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
