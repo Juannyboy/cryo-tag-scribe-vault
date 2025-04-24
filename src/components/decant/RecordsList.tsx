@@ -3,14 +3,53 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DecanterRecord } from "@/types/decanter";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Trash2, History } from "lucide-react";
 
 interface RecordsListProps {
   records: DecanterRecord[];
   onViewQRCode: (record: DecanterRecord) => void;
   onGeneratePDF: (record: DecanterRecord) => void;
+  showDeleteButton?: boolean;
+  showRestoreButton?: boolean;
+  onRestore?: (record: DecanterRecord) => void;
 }
 
-export function RecordsList({ records, onViewQRCode, onGeneratePDF }: RecordsListProps) {
+export function RecordsList({ 
+  records, 
+  onViewQRCode, 
+  onGeneratePDF,
+  showDeleteButton,
+  showRestoreButton,
+  onRestore 
+}: RecordsListProps) {
+  const { toast } = useToast();
+
+  const handleDelete = async (record: DecanterRecord) => {
+    const { error } = await supabase
+      .from('decanter_records')
+      .update({ deleted: true, deleted_at: new Date().toISOString() })
+      .eq('id', record.id);
+
+    if (error) {
+      toast({
+        title: "Error Deleting Record",
+        description: "There was an error moving the record to bin.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Record Moved to Bin",
+      description: "The record has been moved to the bin."
+    });
+
+    // Refresh the page to update the list
+    window.location.reload();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -36,6 +75,28 @@ export function RecordsList({ records, onViewQRCode, onGeneratePDF }: RecordsLis
                       <Button onClick={() => onGeneratePDF(record)} variant="outline" size="sm" className="w-full md:w-auto">
                         Generate PDF
                       </Button>
+                      {showDeleteButton && (
+                        <Button 
+                          onClick={() => handleDelete(record)} 
+                          variant="destructive" 
+                          size="sm"
+                          className="w-full md:w-auto"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Move to Bin
+                        </Button>
+                      )}
+                      {showRestoreButton && onRestore && (
+                        <Button 
+                          onClick={() => onRestore(record)} 
+                          variant="outline" 
+                          size="sm"
+                          className="w-full md:w-auto"
+                        >
+                          <History className="mr-2 h-4 w-4" />
+                          Restore
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>

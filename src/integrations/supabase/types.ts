@@ -14,6 +14,8 @@ export type Database = {
           amount: string
           created_at: string
           date: string
+          deleted: boolean | null
+          deleted_at: string | null
           department: string
           id: string
           purchase_order: string
@@ -25,6 +27,8 @@ export type Database = {
           amount: string
           created_at?: string
           date: string
+          deleted?: boolean | null
+          deleted_at?: string | null
           department: string
           id: string
           purchase_order: string
@@ -36,6 +40,8 @@ export type Database = {
           amount?: string
           created_at?: string
           date?: string
+          deleted?: boolean | null
+          deleted_at?: string | null
           department?: string
           id?: string
           purchase_order?: string
