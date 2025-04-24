@@ -1,9 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { History } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { LogOut, LogIn } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 export function PageHeader() {
   const navigate = useNavigate();
