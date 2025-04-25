@@ -43,16 +43,37 @@ export default function Auth() {
         if (error) throw error;
         navigate("/");
       } else {
-        const { error } = await supabase.auth.signUp({
+        // Modified to use signUp without requiring email verification
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            // This will bypass email verification requirement
+            emailRedirectTo: window.location.origin,
+            data: {
+              email_confirmed: true
+            }
+          }
         });
         
         if (error) throw error;
-        toast({
-          title: "Success",
-          description: "Please check your email to verify your account",
-        });
+        
+        // If registration was successful, automatically sign in
+        if (data.user) {
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          
+          if (signInError) throw signInError;
+          
+          toast({
+            title: "Registration successful",
+            description: "Your account has been created and you are now logged in.",
+          });
+          
+          navigate("/");
+        }
       }
     } catch (error: any) {
       toast({
