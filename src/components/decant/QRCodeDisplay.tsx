@@ -7,7 +7,7 @@ import { DecanterRecord } from "@/types/decanter";
 // Make sure to encode a full URL to the /record/:id page, not just the ID!
 function getQRCodeValue(record: DecanterRecord): string {
   // For Vite/Lovable, use pathname only (window.location.origin + ...)
-  let baseUrl = window?.location?.origin || "";
+  const baseUrl = window?.location?.origin || "https://decanting.vercel.app";
   return `${baseUrl}/record/${record.id}`;
 }
 
