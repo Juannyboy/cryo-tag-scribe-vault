@@ -9,42 +9,57 @@ export const generateQROnlyPDF = (record: DecanterRecord) => {
     format: "a4",
   });
 
-  // Get QR code canvas
-  const qrCanvas = document.querySelector('canvas') as HTMLCanvasElement;
-  if (qrCanvas) {
-    // Center the QR code on the page
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const qrSize = 100; // size in mm
-    const x = (pageWidth - qrSize) / 2;
-    const y = (pageHeight - qrSize) / 2;
+  // Get QR code canvas - use a delay to ensure canvas is rendered
+  setTimeout(() => {
+    const qrCanvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (qrCanvas) {
+      // Center the QR code on the page
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const qrSize = 100; // size in mm
+      const x = (pageWidth - qrSize) / 2;
+      const y = (pageHeight - qrSize) / 2;
 
-    // Add the QR code with proper data URL format
-    const qrDataUrl = qrCanvas.toDataURL('image/png');
-    doc.addImage(qrDataUrl, 'PNG', x, y, qrSize, qrSize);
-    
-    // Add small identifier text below
-    doc.setFontSize(10);
-    doc.text(`Decanting ID: ${record.id}`, pageWidth / 2, y + qrSize + 10, { align: 'center' });
-  } else {
-    // If QR canvas not found, add error text
-    doc.setFontSize(16);
-    doc.setTextColor(255, 0, 0);
-    doc.text("QR Code not available", 105, 150, { align: "center" });
-  }
+      // Add the QR code with proper data URL format
+      const qrDataUrl = qrCanvas.toDataURL('image/png');
+      doc.addImage(qrDataUrl, 'PNG', x, y, qrSize, qrSize);
+      
+      // Add small identifier text below
+      doc.setFontSize(10);
+      doc.text(`Decanting ID: ${record.id}`, pageWidth / 2, y + qrSize + 10, { align: 'center' });
 
-  // Create download
-  const pdfOutput = doc.output('blob');
-  const pdfUrl = URL.createObjectURL(pdfOutput);
-  
-  const link = document.createElement('a');
-  link.href = pdfUrl;
-  link.download = `QR_Code_${record.id}.pdf`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  URL.revokeObjectURL(pdfUrl);
+      // Create download
+      const pdfOutput = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfOutput);
+      
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `QR_Code_${record.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(pdfUrl);
+    } else {
+      // If QR canvas not found, add error text
+      doc.setFontSize(16);
+      doc.setTextColor(255, 0, 0);
+      doc.text("QR Code not available", 105, 150, { align: "center" });
+      
+      // Create download even if QR isn't available
+      const pdfOutput = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfOutput);
+      
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `QR_Code_${record.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(pdfUrl);
+    }
+  }, 100); // Small delay to ensure canvas rendering
 };
 
 export const generatePDF = (record: DecanterRecord) => {
