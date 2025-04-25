@@ -1,3 +1,4 @@
+import { LiveQRCodeScanner } from "./LiveQRCodeScanner";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecantForm } from "./DecantForm";
@@ -178,13 +179,7 @@ export function TabsContainer() {
       </TabsContent>
 
       <TabsContent value="scan">
-        <ScanQRCode onSearch={handleSearch} />
-        {activeRecord && (
-          <QRCodeDisplay 
-            record={activeRecord} 
-            onGeneratePDF={handleGeneratePDF} 
-          />
-        )}
+        <LiveQRCodeScanner />
       </TabsContent>
     </Tabs>
   );
