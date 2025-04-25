@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,10 +25,27 @@ export function RecordsList({
 }: RecordsListProps) {
   const { toast } = useToast();
 
+  const handleViewQRCode = async (record: DecanterRecord) => {
+    try {
+      import("@/lib/pdf-generator").then(module => {
+        module.generateQROnlyPDF(record);
+        toast({
+          title: "QR Code PDF Generated",
+          description: "Your QR code PDF is ready for download."
+        });
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate QR code PDF",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleDelete = async (record: DecanterRecord, permanent: boolean = false) => {
     try {
       if (permanent) {
-        // Permanently delete the record
         const { error } = await supabase
           .from('decanter_records')
           .delete()
@@ -42,7 +58,6 @@ export function RecordsList({
           description: "The record has been permanently deleted."
         });
       } else {
-        // Soft delete (move to bin)
         const { error } = await supabase
           .from('decanter_records')
           .update({ deleted: true, deleted_at: new Date().toISOString() })
@@ -56,7 +71,6 @@ export function RecordsList({
         });
       }
 
-      // Refresh the page to update the list
       window.location.reload();
     } catch (error: any) {
       toast({
@@ -86,7 +100,7 @@ export function RecordsList({
                       <p className="text-sm">Amount: {record.amount}</p>
                     </div>
                     <div className="flex flex-col gap-2 w-full md:w-auto">
-                      <Button onClick={() => onViewQRCode(record)} size="sm" className="w-full md:w-auto">
+                      <Button onClick={() => handleViewQRCode(record)} size="sm" className="w-full md:w-auto">
                         View QR Code
                       </Button>
                       <Button onClick={() => onGeneratePDF(record)} variant="outline" size="sm" className="w-full md:w-auto">
