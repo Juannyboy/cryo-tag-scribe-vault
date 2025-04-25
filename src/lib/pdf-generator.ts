@@ -1,3 +1,4 @@
+
 import jsPDF from "jspdf";
 import { DecanterRecord } from "@/types/decanter";
 
@@ -18,12 +19,18 @@ export const generateQROnlyPDF = (record: DecanterRecord) => {
     const x = (pageWidth - qrSize) / 2;
     const y = (pageHeight - qrSize) / 2;
 
-    // Add the QR code
-    doc.addImage(qrCanvas.toDataURL(), 'PNG', x, y, qrSize, qrSize);
+    // Add the QR code with proper data URL format
+    const qrDataUrl = qrCanvas.toDataURL('image/png');
+    doc.addImage(qrDataUrl, 'PNG', x, y, qrSize, qrSize);
     
     // Add small identifier text below
     doc.setFontSize(10);
     doc.text(`Decanting ID: ${record.id}`, pageWidth / 2, y + qrSize + 10, { align: 'center' });
+  } else {
+    // If QR canvas not found, add error text
+    doc.setFontSize(16);
+    doc.setTextColor(255, 0, 0);
+    doc.text("QR Code not available", 105, 150, { align: "center" });
   }
 
   // Create download

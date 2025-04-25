@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -5,6 +6,8 @@ import { DecanterRecord } from "@/types/decanter";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, History } from "lucide-react";
+import { useState } from "react";
+import { QRCodeCanvas } from "@/components/QRCode";
 
 interface RecordsListProps {
   records: DecanterRecord[];
@@ -24,23 +27,39 @@ export function RecordsList({
   onRestore 
 }: RecordsListProps) {
   const { toast } = useToast();
+  const [selectedRecord, setSelectedRecord] = useState<DecanterRecord | null>(null);
+
+  // Function to get QR code value from record
+  const getQRCodeValue = (record: DecanterRecord): string => {
+    let baseUrl = window?.location?.origin || "";
+    return `${baseUrl}/record/${record.id}`;
+  };
 
   const handleViewQRCode = async (record: DecanterRecord) => {
-    try {
-      import("@/lib/pdf-generator").then(module => {
-        module.generateQROnlyPDF(record);
-        toast({
-          title: "QR Code PDF Generated",
-          description: "Your QR code PDF is ready for download."
+    // Set the selected record to render QR canvas first
+    setSelectedRecord(record);
+    
+    // Use setTimeout to ensure QR code is rendered before generating PDF
+    setTimeout(() => {
+      try {
+        import("@/lib/pdf-generator").then(module => {
+          module.generateQROnlyPDF(record);
+          toast({
+            title: "QR Code PDF Generated",
+            description: "Your QR code PDF is ready for download."
+          });
+          // Reset selected record
+          setSelectedRecord(null);
         });
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate QR code PDF",
-        variant: "destructive"
-      });
-    }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to generate QR code PDF",
+          variant: "destructive"
+        });
+        setSelectedRecord(null);
+      }
+    }, 300); // Small delay to ensure canvas is rendered
   };
 
   const handleDelete = async (record: DecanterRecord, permanent: boolean = false) => {
@@ -87,6 +106,13 @@ export function RecordsList({
         <CardTitle>Decanting Records</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Hidden QR code for PDF generation */}
+        {selectedRecord && (
+          <div style={{ position: 'absolute', left: '-9999px' }}>
+            <QRCodeCanvas value={getQRCodeValue(selectedRecord)} size={500} />
+          </div>
+        )}
+        
         <ScrollArea className="h-[400px] md:h-[500px]">
           {records.length > 0 ? (
             <div className="space-y-4">
