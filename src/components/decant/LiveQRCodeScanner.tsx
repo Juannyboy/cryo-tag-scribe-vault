@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import QrReader from "react-qr-reader";
+import { QrReader } from "react-qr-reader";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { generatePDF } from "@/lib/pdf-generator";
@@ -78,10 +79,18 @@ export function LiveQRCodeScanner() {
       <h2 className="text-lg font-bold text-center">Scan QR Code to Generate PDF</h2>
       <div className="rounded-lg overflow-hidden border w-full max-w-md mx-auto">
         <QrReader
-          delay={500}
-          onError={(err) => console.error(err)}
-          onScan={handleScan}
-          style={{ width: "100%" }}
+          constraints={{ facingMode: 'environment' }}
+          onResult={(result, error) => {
+            if (result) {
+              handleScan(result.getText());
+            }
+            if (error) {
+              console.error(error);
+            }
+          }}
+          scanDelay={500}
+          videoContainerStyle={{ width: '100%', height: 'auto' }}
+          videoStyle={{ width: '100%', height: 'auto' }}
         />
       </div>
     </div>
