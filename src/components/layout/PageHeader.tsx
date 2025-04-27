@@ -16,6 +16,11 @@ export function PageHeader() {
       setUser(session?.user ?? null);
     });
 
+    // Check current session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
     return () => subscription.unsubscribe();
   }, []);
 
