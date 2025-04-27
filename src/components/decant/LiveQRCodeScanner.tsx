@@ -14,38 +14,60 @@ export function LiveQRCodeScanner() {
 
     setScanned(true); // Prevent multiple scans
 
-    const { data: record, error } = await supabase
-      .from("decanter_records")
-      .select()
-      .eq("id", data.trim())
-      .single();
+    // Check if the scanned data is a URL containing a record ID
+    let recordId: string;
+    
+    try {
+      // Try to extract ID from URL if it's a URL
+      if (data.includes('/record/')) {
+        const url = new URL(data);
+        const pathSegments = url.pathname.split('/');
+        recordId = pathSegments[pathSegments.length - 1];
+      } else {
+        // Otherwise use the data directly as ID
+        recordId = data.trim();
+      }
+      
+      const { data: record, error } = await supabase
+        .from("decanter_records")
+        .select()
+        .eq("id", recordId)
+        .single();
 
-    if (error || !record) {
+      if (error || !record) {
+        toast({
+          title: "Record Not Found",
+          description: `No record found with ID: ${recordId}`,
+          variant: "destructive",
+        });
+        setScanned(false); // allow retry
+        return;
+      }
+
+      const transformedRecord: DecanterRecord = {
+        id: record.id,
+        date: record.date,
+        requester: record.requester,
+        department: record.department,
+        purchaseOrder: record.purchase_order,
+        amount: record.amount,
+        representative: record.representative,
+        requesterRepresentative: record.requester_representative
+      };
+
+      generatePDF(transformedRecord);
       toast({
-        title: "Record Not Found",
-        description: `No record found with ID: ${data}`,
+        title: "PDF Generated",
+        description: `PDF for ID: ${recordId} has been downloaded.`,
+      });
+    } catch (error) {
+      console.error("QR scan error:", error);
+      toast({
+        title: "Scan Error",
+        description: "Could not process the QR code. Please try again.",
         variant: "destructive",
       });
-      setScanned(false); // allow retry
-      return;
     }
-
-    const transformedRecord: DecanterRecord = {
-      id: record.id,
-      date: record.date,
-      requester: record.requester,
-      department: record.department,
-      purchaseOrder: record.purchase_order,
-      amount: record.amount,
-      representative: record.representative,
-      requesterRepresentative: record.requester_representative
-    };
-
-    generatePDF(transformedRecord);
-    toast({
-      title: "PDF Generated",
-      description: `PDF for ID: ${data} has been downloaded.`,
-    });
 
     // Optional: reset scanning after delay
     setTimeout(() => setScanned(false), 3000);

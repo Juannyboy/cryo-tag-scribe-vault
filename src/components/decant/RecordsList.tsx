@@ -31,7 +31,7 @@ export function RecordsList({
 
   // Function to get QR code value from record
   const getQRCodeValue = (record: DecanterRecord): string => {
-    let baseUrl = window?.location?.origin || "";
+    const baseUrl = window?.location?.origin || "";
     return `${baseUrl}/record/${record.id}`;
   };
 
@@ -109,7 +109,7 @@ export function RecordsList({
         {/* Hidden QR code for PDF generation */}
         {selectedRecord && (
           <div style={{ position: 'absolute', left: '-9999px' }}>
-            <QRCodeCanvas value={getQRCodeValue(selectedRecord)} size={500} />
+            <QRCodeCanvas id={`hidden-qr-${selectedRecord.id}`} value={getQRCodeValue(selectedRecord)} size={500} />
           </div>
         )}
         

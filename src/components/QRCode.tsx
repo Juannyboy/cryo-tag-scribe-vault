@@ -8,6 +8,7 @@ interface QRCodeProps {
   level?: string;
   bgColor?: string;
   fgColor?: string;
+  id?: string;
 }
 
 export const QRCodeCanvas: React.FC<QRCodeProps> = ({
@@ -15,7 +16,8 @@ export const QRCodeCanvas: React.FC<QRCodeProps> = ({
   size = 128,
   level = 'L',
   bgColor = '#ffffff',
-  fgColor = '#000000'
+  fgColor = '#000000',
+  id
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -41,6 +43,6 @@ export const QRCodeCanvas: React.FC<QRCodeProps> = ({
   }, [value, size, level, bgColor, fgColor]);
 
   return (
-    <canvas ref={canvasRef} width={size} height={size} />
+    <canvas id={id} ref={canvasRef} width={size} height={size} />
   );
 };
