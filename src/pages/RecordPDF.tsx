@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DecanterRecord } from "@/types/decanter";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card, CardContent, CardHeader, CardTitle, CardFooter
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
 import { useToast } from "@/hooks/use-toast";
@@ -13,23 +15,24 @@ export default function RecordPDF() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [record, setRecord] = useState<DecanterRecord | null>(null);
+  const [editableRecord, setEditableRecord] = useState<DecanterRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch record from Supabase
+  // Fetch record
   useEffect(() => {
     if (!id) {
       setIsLoading(false);
       return;
     }
-    
+
     const fetchRecord = async () => {
       try {
         const { data, error } = await supabase
-          .from('decanter_records')
+          .from("decanter_records")
           .select()
-          .eq('id', id)
+          .eq("id", id)
           .single();
-        
+
         if (error || !data) {
           toast({
             title: "Record Not Found",
@@ -39,9 +42,8 @@ export default function RecordPDF() {
           setIsLoading(false);
           return;
         }
-        
-        // Transform the data to match our DecanterRecord type
-        const transformedRecord: DecanterRecord = {
+
+        const transformed: DecanterRecord = {
           id: data.id,
           date: data.date,
           requester: data.requester,
@@ -49,13 +51,14 @@ export default function RecordPDF() {
           purchaseOrder: data.purchase_order,
           amount: data.amount,
           representative: data.representative,
-          requesterRepresentative: data.requester_representative
+          requesterRepresentative: data.requester_representative,
         };
-        
-        setRecord(transformedRecord);
+
+        setRecord(transformed);
+        setEditableRecord(transformed);
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching record:", error);
+        console.error("Fetch error:", error);
         toast({
           title: "Error",
           description: "There was an error fetching the record.",
@@ -73,59 +76,79 @@ export default function RecordPDF() {
     return `${d.getDate()}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
   })();
 
+  const handleChange = (key: keyof DecanterRecord, value: string) => {
+    setEditableRecord(prev => prev ? { ...prev, [key]: value } : prev);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!editableRecord) return;
+
+    const { error } = await supabase
+      .from("decanter_records")
+      .update({
+        id: editableRecord.id,
+        date: editableRecord.date,
+        requester: editableRecord.requester,
+        department: editableRecord.department,
+        purchase_order: editableRecord.purchaseOrder,
+        amount: editableRecord.amount,
+        representative: editableRecord.representative,
+        requester_representative: editableRecord.requesterRepresentative,
+      })
+      .eq("id", record?.id);
+
+    if (error) {
+      toast({
+        title: "Update Failed",
+        description: "There was an error saving changes.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Changes Saved",
+        description: `Record ${editableRecord.id} updated successfully.`,
+      });
+      setRecord(editableRecord);
+    }
+  };
+
   const handleGeneratePDF = () => {
-    if (!record) return;
-    
+    if (!editableRecord) return;
+
     import("@/lib/pdf-generator").then(mod => {
-      mod.generatePDF(record);
+      mod.generatePDF(editableRecord);
       toast({
         title: "PDF Downloaded",
-        description: `PDF for ${record.id} generated with scan date ${scanDate}.`,
+        description: `PDF for ${editableRecord.id} generated with scan date ${scanDate}.`,
       });
     });
   };
-  
+
   const handleGenerateQRPDF = () => {
-    if (!record) return;
-    
-    // Add a small delay to ensure QR code is rendered
+    if (!editableRecord) return;
+
     setTimeout(() => {
       import("@/lib/pdf-generator").then(mod => {
-        mod.generateQROnlyPDF(record);
+        mod.generateQROnlyPDF(editableRecord);
         toast({
           title: "QR Code PDF Downloaded",
-          description: `QR Code PDF for ${record.id} generated successfully.`,
+          description: `QR Code PDF for ${editableRecord.id} generated.`,
         });
       });
     }, 300);
   };
 
-  const handleGoBack = () => {
-    navigate("/");
-  };
+  const handleGoBack = () => navigate("/");
 
   if (!id)
-    return (
-      <div className="p-8">
-        <p>No record specified.</p>
-      </div>
-    );
+    return <div className="p-8"><p>No record specified.</p></div>;
 
   if (isLoading)
-    return (
-      <div className="p-8 flex justify-center">
-        <p>Loading record information...</p>
-      </div>
-    );
+    return <div className="p-8 flex justify-center"><p>Loading...</p></div>;
 
-  if (!record)
-    return (
-      <div className="p-8">
-        <p>No record found for id: {id}</p>
-      </div>
-    );
+  if (!editableRecord)
+    return <div className="p-8"><p>No record found for id: {id}</p></div>;
 
-  // Use the deployed URL for the QR code value
   const qrCodeValue = `https://decanting.vercel.app/record/${id}`;
 
   return (
@@ -138,26 +161,53 @@ export default function RecordPDF() {
       >
         <ArrowLeft className="h-6 w-6" />
       </Button>
-      
+
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Liquid Nitrogen Decant Record</CardTitle>
         </CardHeader>
+
         <CardContent className="flex flex-col items-center gap-4">
           <div className="border p-4 bg-white">
-            <QRCodeCanvas id={`record-qr-${record.id}`} value={qrCodeValue} size={200} />
+            <QRCodeCanvas id={`record-qr-${editableRecord.id}`} value={qrCodeValue} size={200} />
           </div>
+
           <div className="w-full text-left text-sm">
-            <div className="mb-2"><b>Decanting ID:</b> {record.id}</div>
-            <div className="mb-2"><b>Requester:</b> {record.requester}</div>
-            <div className="mb-2"><b>Department:</b> {record.department}</div>
-            <div className="mb-2"><b>Purchase Order:</b> {record.purchaseOrder}</div>
-            <div className="mb-2"><b>Amount:</b> {record.amount}</div>
-            <div className="mb-2"><b>Original Date:</b> {record.date}</div>
-            <div className="mb-2"><b>PDF Scan Date:</b> {scanDate}</div>
+            {[
+              ["Decanting ID", "id"],
+              ["Requester", "requester"],
+              ["Department", "department"],
+              ["Purchase Order", "purchaseOrder"],
+              ["Amount", "amount"],
+              ["Original Date", "date"]
+            ].map(([label, key]) => (
+              <div className="mb-2" key={key}>
+                <b>{label}:</b>{" "}
+                <input
+                  className="border px-2 py-1 rounded w-full"
+                  value={editableRecord[key as keyof DecanterRecord] || ""}
+                  onChange={(e) =>
+                    handleChange(key as keyof DecanterRecord, e.target.value)
+                  }
+                />
+              </div>
+            ))}
+
+            <div className="mb-2">
+              <b>PDF Scan Date:</b>{" "}
+              <input
+                className="border px-2 py-1 rounded w-full bg-gray-100"
+                value={scanDate}
+                readOnly
+              />
+            </div>
           </div>
         </CardContent>
-        <CardFooter className="flex gap-2 justify-center">
+
+        <CardFooter className="flex flex-wrap gap-2 justify-center">
+          <Button onClick={handleSaveChanges} variant="secondary">
+            💾 Save Changes
+          </Button>
           <Button onClick={handleGenerateQRPDF} variant="outline">
             <QrCode className="mr-2 h-4 w-4" /> Download QR Code
           </Button>
