@@ -114,13 +114,7 @@ export const generatePDF = (record: DecanterRecord) => {
   doc.setFont("helvetica", "bold");
   doc.text("Liquid Nitrogen Decant Form", 105, 65, { align: "center" });
   
-  // Add scan date
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("PDF Scan Date:", 15, 75);
-  doc.setFont("helvetica", "bold");
-  doc.text(scanDate, 45, 75);
-  doc.setFont("helvetica", "normal");
+ 
   
   // Add decanting number with proper spacing
   doc.text("Decanting Number:", 15, 85);
