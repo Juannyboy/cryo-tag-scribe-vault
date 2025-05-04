@@ -148,63 +148,14 @@ export default function RecordPDF() {
             <QRCodeCanvas id={`record-qr-${record.id}`} value={qrCodeValue} size={200} />
           </div>
           <div className="w-full text-left text-sm">
-      <div className="mb-2">
-        <b>Decanting ID:</b>{" "}
-        <input
-          className="border px-2 py-1 rounded w-full"
-          value={editableRecord.id}
-          onChange={(e) => handleChange("id", e.target.value)}
-        />
-      </div>
-      <div className="mb-2">
-        <b>Requester:</b>{" "}
-        <input
-          className="border px-2 py-1 rounded w-full"
-          value={editableRecord.requester}
-          onChange={(e) => handleChange("requester", e.target.value)}
-        />
-      </div>
-      <div className="mb-2">
-        <b>Department:</b>{" "}
-        <input
-          className="border px-2 py-1 rounded w-full"
-          value={editableRecord.department}
-          onChange={(e) => handleChange("department", e.target.value)}
-        />
-      </div>
-      <div className="mb-2">
-        <b>Purchase Order:</b>{" "}
-        <input
-          className="border px-2 py-1 rounded w-full"
-          value={editableRecord.purchaseOrder}
-          onChange={(e) => handleChange("purchaseOrder", e.target.value)}
-        />
-      </div>
-      <div className="mb-2">
-        <b>Amount:</b>{" "}
-        <input
-          className="border px-2 py-1 rounded w-full"
-          value={editableRecord.amount}
-          onChange={(e) => handleChange("amount", e.target.value)}
-        />
-      </div>
-      <div className="mb-2">
-        <b>Original Date:</b>{" "}
-        <input
-          className="border px-2 py-1 rounded w-full"
-          value={editableRecord.date}
-          onChange={(e) => handleChange("date", e.target.value)}
-        />
-      </div>
-      <div className="mb-2">
-        <b>PDF Scan Date:</b>{" "}
-        <input
-          className="border px-2 py-1 rounded w-full"
-          value={editableRecord.scanDate}
-          onChange={(e) => handleChange("scanDate", e.target.value)}
-        />
-      </div>
-    </div>
+            <div className="mb-2"><b>Decanting ID:</b> {record.id}</div>
+            <div className="mb-2"><b>Requester:</b> {record.requester}</div>
+            <div className="mb-2"><b>Department:</b> {record.department}</div>
+            <div className="mb-2"><b>Purchase Order:</b> {record.purchaseOrder}</div>
+            <div className="mb-2"><b>Amount:</b> {record.amount}</div>
+            <div className="mb-2"><b>Original Date:</b> {record.date}</div>
+            <div className="mb-2"><b>PDF Scan Date:</b> {scanDate}</div>
+          </div>
         </CardContent>
         <CardFooter className="flex gap-2 justify-center">
           <Button onClick={handleGenerateQRPDF} variant="outline">
