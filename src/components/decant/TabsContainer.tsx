@@ -1,3 +1,4 @@
+
 import { LiveQRCodeScanner } from "./LiveQRCodeScanner";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -144,12 +145,13 @@ export function TabsContainer() {
       requesterRepresentative: data.requester_representative
     };
 
-    setActiveRecord(transformedRecord);
+    // Navigate to the record page
+    navigate(`/record/${data.id}`);
+    
     toast({
       title: "Record Found",
       description: `Found record for ID: ${id}`,
     });
-    navigate(`/record/${data.id}`);
   };
 
   return (
@@ -179,7 +181,10 @@ export function TabsContainer() {
       </TabsContent>
 
       <TabsContent value="scan">
-        <LiveQRCodeScanner />
+        <div className="space-y-6">
+          <ScanQRCode onSearch={handleSearch} />
+          <LiveQRCodeScanner />
+        </div>
       </TabsContent>
     </Tabs>
   );

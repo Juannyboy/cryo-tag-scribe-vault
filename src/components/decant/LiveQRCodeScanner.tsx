@@ -1,13 +1,12 @@
-
 import { useState } from "react";
 import { QrReader } from "react-qr-reader";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { generatePDF } from "@/lib/pdf-generator";
-import { DecanterRecord } from "@/types/decanter";
+import { useNavigate } from "react-router-dom";
 
 export function LiveQRCodeScanner() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [scanned, setScanned] = useState(false);
 
   const handleScan = async (data: string | null) => {
@@ -45,21 +44,12 @@ export function LiveQRCodeScanner() {
         return;
       }
 
-      const transformedRecord: DecanterRecord = {
-        id: record.id,
-        date: record.date,
-        requester: record.requester,
-        department: record.department,
-        purchaseOrder: record.purchase_order,
-        amount: record.amount,
-        representative: record.representative,
-        requesterRepresentative: record.requester_representative
-      };
-
-      generatePDF(transformedRecord);
+      // Navigate to the record page
+      navigate(`/record/${recordId}`);
+      
       toast({
-        title: "PDF Generated",
-        description: `PDF for ID: ${recordId} has been downloaded.`,
+        title: "Record Found",
+        description: `Found record for ID: ${recordId}`,
       });
     } catch (error) {
       console.error("QR scan error:", error);
@@ -76,7 +66,7 @@ export function LiveQRCodeScanner() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-center">Scan QR Code to Generate PDF</h2>
+      <h2 className="text-lg font-bold text-center">Scan QR Code</h2>
       <div className="rounded-lg overflow-hidden border w-full max-w-md mx-auto">
         <QrReader
           constraints={{ facingMode: 'environment' }}

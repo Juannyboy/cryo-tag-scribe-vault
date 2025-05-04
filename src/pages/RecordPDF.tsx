@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DecanterRecord } from "@/types/decanter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FilePdf, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function RecordPDF() {
@@ -14,40 +14,56 @@ export default function RecordPDF() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [record, setRecord] = useState<DecanterRecord | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch record from Supabase
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
     
     const fetchRecord = async () => {
-      const { data, error } = await supabase
-        .from('decanter_records')
-        .select()
-        .eq('id', id)
-        .single();
-      
-      if (error || !data) {
+      try {
+        const { data, error } = await supabase
+          .from('decanter_records')
+          .select()
+          .eq('id', id)
+          .single();
+        
+        if (error || !data) {
+          toast({
+            title: "Record Not Found",
+            description: "Could not find the requested record.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        // Transform the data to match our DecanterRecord type
+        const transformedRecord: DecanterRecord = {
+          id: data.id,
+          date: data.date,
+          requester: data.requester,
+          department: data.department,
+          purchaseOrder: data.purchase_order,
+          amount: data.amount,
+          representative: data.representative,
+          requesterRepresentative: data.requester_representative
+        };
+        
+        setRecord(transformedRecord);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching record:", error);
         toast({
-          title: "Record Not Found",
-          description: "Could not find the requested record.",
+          title: "Error",
+          description: "There was an error fetching the record.",
           variant: "destructive",
         });
-        return;
+        setIsLoading(false);
       }
-      
-      // Transform the data to match our DecanterRecord type
-      const transformedRecord: DecanterRecord = {
-        id: data.id,
-        date: data.date,
-        requester: data.requester,
-        department: data.department,
-        purchaseOrder: data.purchase_order,
-        amount: data.amount,
-        representative: data.representative,
-        requesterRepresentative: data.requester_representative
-      };
-      
-      setRecord(transformedRecord);
     };
 
     fetchRecord();
@@ -58,8 +74,9 @@ export default function RecordPDF() {
     return `${d.getDate()}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
   })();
 
-  const handlePDF = () => {
+  const handleGeneratePDF = () => {
     if (!record) return;
+    
     import("@/lib/pdf-generator").then(mod => {
       mod.generatePDF(record);
       toast({
@@ -67,6 +84,21 @@ export default function RecordPDF() {
         description: `PDF for ${record.id} generated with scan date ${scanDate}.`,
       });
     });
+  };
+  
+  const handleGenerateQRPDF = () => {
+    if (!record) return;
+    
+    // Add a small delay to ensure QR code is rendered
+    setTimeout(() => {
+      import("@/lib/pdf-generator").then(mod => {
+        mod.generateQROnlyPDF(record);
+        toast({
+          title: "QR Code PDF Downloaded",
+          description: `QR Code PDF for ${record.id} generated successfully.`,
+        });
+      });
+    }, 300);
   };
 
   const handleGoBack = () => {
@@ -80,12 +112,21 @@ export default function RecordPDF() {
       </div>
     );
 
+  if (isLoading)
+    return (
+      <div className="p-8 flex justify-center">
+        <p>Loading record information...</p>
+      </div>
+    );
+
   if (!record)
     return (
       <div className="p-8">
         <p>No record found for id: {id}</p>
       </div>
     );
+
+  const qrCodeValue = window.location.href;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/20 relative">
@@ -103,7 +144,9 @@ export default function RecordPDF() {
           <CardTitle>Liquid Nitrogen Decant Record</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
-          <QRCodeCanvas value={window.location.href} size={140} />
+          <div className="border p-4 bg-white">
+            <QRCodeCanvas id={`record-qr-${record.id}`} value={qrCodeValue} size={200} />
+          </div>
           <div className="w-full text-left text-sm">
             <div className="mb-2"><b>Decanting ID:</b> {record.id}</div>
             <div className="mb-2"><b>Requester:</b> {record.requester}</div>
@@ -113,8 +156,15 @@ export default function RecordPDF() {
             <div className="mb-2"><b>Original Date:</b> {record.date}</div>
             <div className="mb-2"><b>PDF Scan Date:</b> {scanDate}</div>
           </div>
-          <Button onClick={handlePDF}>Download PDF with Scan Date</Button>
         </CardContent>
+        <CardFooter className="flex gap-2 justify-center">
+          <Button onClick={handleGenerateQRPDF} variant="outline">
+            <QrCode className="mr-2 h-4 w-4" /> Download QR Code
+          </Button>
+          <Button onClick={handleGeneratePDF}>
+            <FilePdf className="mr-2 h-4 w-4" /> Download PDF
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
