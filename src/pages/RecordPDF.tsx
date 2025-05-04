@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, FilePdf, QrCode } from "lucide-react";
+import { ArrowLeft, FileText, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function RecordPDF() {
@@ -162,7 +162,7 @@ export default function RecordPDF() {
             <QrCode className="mr-2 h-4 w-4" /> Download QR Code
           </Button>
           <Button onClick={handleGeneratePDF}>
-            <FilePdf className="mr-2 h-4 w-4" /> Download PDF
+            <FileText className="mr-2 h-4 w-4" /> Download PDF
           </Button>
         </CardFooter>
       </Card>
