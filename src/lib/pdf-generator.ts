@@ -119,7 +119,7 @@ export const generatePDF = (record: DecanterRecord) => {
   // Add decanting number with proper spacing
   doc.text("Decanting Number:", 15, 85);
   doc.setFont("helvetica", "bold");
-  doc.text(record.id, 60, 85);
+  doc.text(record.id, 65, 85);
   doc.setFont("helvetica", "normal");
   
   // Create table structure with proper spacing
