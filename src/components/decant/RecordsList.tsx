@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,8 +30,7 @@ export function RecordsList({
 
   // Function to get QR code value from record
   const getQRCodeValue = (record: DecanterRecord): string => {
-    const baseUrl = window?.location?.origin || "";
-    return `${baseUrl}/record/${record.id}`;
+    return `https://decanting.vercel.app/record/${record.id}`;
   };
 
   const handleViewQRCode = async (record: DecanterRecord) => {

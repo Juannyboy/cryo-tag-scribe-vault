@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QRCodeCanvas } from "@/components/QRCode";
@@ -6,9 +5,8 @@ import { DecanterRecord } from "@/types/decanter";
 
 // Make sure to encode a full URL to the /record/:id page, not just the ID!
 function getQRCodeValue(record: DecanterRecord): string {
-  // Use window.location.origin to ensure we get the absolute URL of the current site
-  const baseUrl = window?.location?.origin || "https://decanting.vercel.app";
-  return `${baseUrl}/record/${record.id}`;
+  // Use the deployed URL instead of window.location.origin
+  return `https://decanting.vercel.app/record/${record.id}`;
 }
 
 interface QRCodeDisplayProps {

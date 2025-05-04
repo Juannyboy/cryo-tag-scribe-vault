@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DecanterRecord } from "@/types/decanter";
@@ -126,7 +125,8 @@ export default function RecordPDF() {
       </div>
     );
 
-  const qrCodeValue = window.location.href;
+  // Use the deployed URL for the QR code value
+  const qrCodeValue = `https://decanting.vercel.app/record/${id}`;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/20 relative">
